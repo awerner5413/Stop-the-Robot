@@ -23,9 +23,6 @@ WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Stop the Robot!")
 
 # Define colors
-BG_COLOR = (255, 255, 255)
-GRAY = (100, 100, 100)
-ANNA_COLOR = (204, 255, 204)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
@@ -51,6 +48,7 @@ clock = pygame.time.Clock()
 # Define word generator
 words = ['SANDWICH', 'BURRITO', 'NACHOS', 'GYROS', 'WAFFLES']
 
+END_FONT = pygame.font.SysFont('Arial', 100)
 
 # Create button class for player input
 class keyButton():
@@ -68,7 +66,7 @@ class keyButton():
 
         if self.text != '1':
             font = pygame.font.SysFont('Arial', int((self.width + self.height)/2.5))
-            text = font.render(self.text, 1, BLACK)
+            text = font.render(self.text, 1, WHITE)
             WIN.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
 
     def isOver (self, position):
@@ -104,8 +102,15 @@ class codeScreen():
         self.color = WHITE
 
 
-def draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, buttonList, codeButtons):
-    WIN.fill(BG_COLOR)
+def draw_endMessage(text):
+    draw_text = END_FONT.render(text, 1, RED)
+    WIN.blit(draw_text, (WIDTH/2 - draw_text.get_width()/2, HEIGHT/2 - draw_text.get_height()/2))
+    pygame.display.update()
+    pygame.time.delay(3000)
+
+
+def draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, loseCounter, buttonList, codeButtons):
+    WIN.fill(WHITE)
     WIN.blit(COMPUTER, (850, 100))
 
     # Draw buttons buttons
@@ -116,23 +121,25 @@ def draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, buttonList, codeBut
         j.drawInitial(WIN)
 
     # Draw the robots
-    if counter == 1:
+    if loseCounter == 1:
         WIN.blit(RL, (175, 25))
-    elif counter == 2:
+    elif loseCounter == 2:
         WIN.blit(RB, (175, 25))
-    elif counter == 3:
+    elif loseCounter == 3:
         WIN.blit(RRA, (175, 25))
-    elif counter == 4:
+    elif loseCounter == 4:
         WIN.blit(RLA, (175, 25))
-    elif counter == 5:
+    elif loseCounter == 5:
         WIN.blit(RH, (175, 25))
 
     pygame.display.update()
 
 
 def main():
-    counter = 0
+    loseCounter = 0
+    winCounter = 0
     code = choice(words)
+    winScore = len(code)
 
     # Create boxes to display the code for correct guesses
     LETTER_BOX_WIDTH, LETTER_BOX_HEIGHT = 30, 50
@@ -151,9 +158,9 @@ def main():
         letter = i
         buttonName = f"{letter}_button"
         if x <= 1155:
-            buttonName = keyButton(ANNA_COLOR, x, 700, 80, 70, letter)
+            buttonName = keyButton(BLACK, x, 700, 80, 70, letter)
         else:
-            buttonName = keyButton(ANNA_COLOR, x-1105, 775, 80, 70, letter)
+            buttonName = keyButton(BLACK, x-1105, 775, 80, 70, letter)
         buttonList.append(buttonName)
         x = x + 85
     
@@ -174,13 +181,18 @@ def main():
                             for j in codeButtons:
                                 if i.text == j.text:
                                     j.drawCorrect()
+                                    winCounter += 1
                         else:
-                            counter += 1
+                            loseCounter += 1
                         i.disappear('1')
 
-        draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, buttonList, codeButtons)
+        draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, loseCounter, buttonList, codeButtons)
 
-        if counter > 5:
+        if loseCounter > 5:
+            draw_endMessage("The robot escaped - you lose!")
+            main()
+        if winCounter == winScore:
+            draw_endMessage("You stopped the robot - Congratulations!")
             main()
 
 
