@@ -1,14 +1,15 @@
 # TODO:
-# get letters to appear on lines based on letter button clicked (show all upper, only show correct inputs)
-## see note in draw fxn, need event to deliver bool
-
-# load buttons across the bottom (two rows, alpha order)
-# get better font and see if I can round button edges
-# you win and you lose messages
-# fix robot images by starting with a completed robot with the size I want, then remove each part and save
-# find dictionary api for wordbank
-# use google fonts - it's an API?
-# learn how pygame works with base Python under the hood
+    # you win and you lose messages
+    # find dictionary api for wordbank # use google fonts - it's an API?
+    # get better font and see if I can round button edges    
+    # fix robot images by starting with a completed robot with the size I want, then remove each part and save    
+    # Make letters "pressable" using keyboard
+    # add a starting screen that says "Enter the destruct sequence before the robot destroys the world!"    
+    # learn how pygame works with base Python under the hood
+# FEATURES
+    # add a timer
+    # have the timer go faster or slower based on successful/incorrect guesses
+    # have more difficult levels with shorter timers
 
 import pygame
 import os
@@ -48,11 +49,11 @@ FPS = 60
 clock = pygame.time.Clock()
 
 # Define word generator
-words = ['sandwich', 'burrito', 'nachos', 'gyros', 'waffles']
+words = ['SANDWICH', 'BURRITO', 'NACHOS', 'GYROS', 'WAFFLES']
 
 
-# Create button class and test button A
-class button():
+# Create button class for player input
+class keyButton():
     def __init__(self, color, x, y, width, height, text='1'):
         self.color = color
         self.x = x
@@ -61,12 +62,12 @@ class button():
         self.height = height
         self.text = text
 
-    def draw(self, WIN, letter='1'):
-        # Call method to draw botton on the screen
+    def draw(self, WIN):
+        # Call method to draw button on the screen
         pygame.draw.rect(WIN, self.color, (self.x, self.y, self.width, self.height))
 
         if self.text != '1':
-            font = pygame.font.SysFont('Arial', 60)
+            font = pygame.font.SysFont('Arial', int((self.width + self.height)/2.5))
             text = font.render(self.text, 1, BLACK)
             WIN.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
 
@@ -80,28 +81,39 @@ class button():
         self.text = text
 
 
-A_button = button(ANNA_COLOR, 50, 700, 80, 70, 'A')
+# Create class to display the code blank initially and visible as it is guessed
+class codeScreen():
+    def __init__(self, color, x, y, width, height, text='1'):
+        self.color = color
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.text = text
+
+    def drawInitial(self, WIN):
+        # Call method to draw button on the screen
+        pygame.draw.rect(WIN, self.color, (self.x, self.y, self.width, self.height))
+
+        if self.text != '1':
+            font = pygame.font.SysFont('Arial', int((self.width + self.height)/2.5))
+            text = font.render(self.text, 1, BLACK)
+            WIN.blit(text, (self.x + (self.width/2 - text.get_width()/2), self.y + (self.height/2 - text.get_height()/2)))
+        
+    def drawCorrect(self):
+        self.color = WHITE
 
 
-def draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, code):
+def draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, buttonList, codeButtons):
     WIN.fill(BG_COLOR)
     WIN.blit(COMPUTER, (850, 100))
 
-    # Draw letter buttons
-    A_button.draw(WIN)
+    # Draw buttons buttons
+    for i in buttonList:
+        i.draw(WIN)    
 
-    # Define and draw letter lines
-    LETTER_LINE_WIDTH, LETTER_LINE_HEIGHT = 30, 5
-    LETTER_BOX_WIDTH, LETTER_BOX_HEIGHT = 30, 50
-    x, y = 925, 275
-    for i in code:
-        LETTER_LINE = pygame.Rect(x, y, LETTER_LINE_WIDTH, LETTER_LINE_HEIGHT)
-        LETTER_BOX = pygame.Rect(x, y - LETTER_BOX_HEIGHT, LETTER_BOX_WIDTH, LETTER_BOX_HEIGHT)
-        pygame.draw.rect(WIN, RED, LETTER_LINE)
-        pygame.draw.rect(WIN, BLACK, LETTER_BOX)
-        x = x + LETTER_LINE_WIDTH + 12
-    # I CAN HAVE AN EVENT RETURN BOOL FOR LETTER IN CODE AND IF TRUE THEN RENDER TEXT = i on LETTER_BOX
-
+    for j in codeButtons:
+        j.drawInitial(WIN)
 
     # Draw the robots
     if counter == 1:
@@ -122,6 +134,30 @@ def main():
     counter = 0
     code = choice(words)
 
+    # Create boxes to display the code for correct guesses
+    LETTER_BOX_WIDTH, LETTER_BOX_HEIGHT = 30, 50
+    codeX, codeY = 925, 275
+    codeButtons = []
+    for i in code:
+        codeButton = codeScreen(BLACK, codeX, codeY, LETTER_BOX_WIDTH, LETTER_BOX_HEIGHT, i)
+        codeButtons.append(codeButton)
+        codeX = codeX + 42
+    
+    # Create the buttons to submit input
+    alphaList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+    buttonList = []
+    x = 50
+    for i in alphaList:    
+        letter = i
+        buttonName = f"{letter}_button"
+        if x <= 1155:
+            buttonName = keyButton(ANNA_COLOR, x, 700, 80, 70, letter)
+        else:
+            buttonName = keyButton(ANNA_COLOR, x-1105, 775, 80, 70, letter)
+        buttonList.append(buttonName)
+        x = x + 85
+    
+    # Start the game and draw the display
     run = True
     while run:
         clock.tick(FPS)
@@ -129,18 +165,20 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RCTRL:
-                    counter += 1
-
-            # IS THERE A WAY TO DO THIS WITHOUT LISTING EACH BUTTON SEPARATELY???
+            
+            # Select a letter and then hide the button and display either a robot piece or the letter on the screen
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if A_button.isOver(pygame.mouse.get_pos()) == True:
-                    print("A button pressed")
-                    A_button.disappear('1')
+                for i in buttonList:
+                    if i.isOver(pygame.mouse.get_pos()) == True:   
+                        if i.text in code:
+                            for j in codeButtons:
+                                if i.text == j.text:
+                                    j.drawCorrect()
+                        else:
+                            counter += 1
+                        i.disappear('1')
 
-        draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, code)
+        draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, counter, buttonList, codeButtons)
 
         if counter > 5:
             main()
@@ -148,9 +186,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# FEATURES
-# add a starting screen that says "Enter the destruct sequence before the robot destroys the world!"
-# add a timer
-# have the timer go faster or slower based on successful/incorrect guesses
-# have more difficult levels with shorter timers
