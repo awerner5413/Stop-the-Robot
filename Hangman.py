@@ -1,13 +1,11 @@
-# TODO:
-    # you win and you lose messages
-    # find dictionary api for wordbank # use google fonts - it's an API?
-    # get better font and see if I can round button edges    
+# TODO:        
     # fix robot images by starting with a completed robot with the size I want, then remove each part and save    
     # Make letters "pressable" using keyboard
     # add a starting screen that says "Enter the destruct sequence before the robot destroys the world!"    
     # learn how pygame works with base Python under the hood
 # FEATURES
     # add a timer
+    # find dictionary api for wordbank # use google fonts - it's an API?
     # have the timer go faster or slower based on successful/incorrect guesses
     # have more difficult levels with shorter timers
 
@@ -126,9 +124,9 @@ def draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, loseCounter, buttonList, cod
     elif loseCounter == 2:
         WIN.blit(RB, (175, 25))
     elif loseCounter == 3:
-        WIN.blit(RRA, (175, 25))
-    elif loseCounter == 4:
         WIN.blit(RLA, (175, 25))
+    elif loseCounter == 4:
+        WIN.blit(RRA, (175, 25))
     elif loseCounter == 5:
         WIN.blit(RH, (175, 25))
 
