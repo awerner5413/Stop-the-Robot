@@ -1,16 +1,6 @@
-# TODO:        
-    # fix robot images by starting with a completed robot with the size I want, then remove each part and save    
-    # Make letters "pressable" using keyboard
-    # add a starting screen that says "Enter the destruct sequence before the robot destroys the world!"    
-    # learn how pygame works with base Python under the hood
-# FEATURES
-    # add a timer
-    # find dictionary api for wordbank # use google fonts - it's an API?
-    # have the timer go faster or slower based on successful/incorrect guesses
-    # have more difficult levels with shorter timers
-
 import pygame
 import os
+import re
 from random import choice
 
 pygame.init()
@@ -44,7 +34,7 @@ FPS = 60
 clock = pygame.time.Clock()
 
 # Define word generator
-words = ['SANDWICH', 'BURRITO', 'NACHOS', 'GYROS', 'WAFFLES']
+words = ['SANDWICH', 'BURRITO', 'NACHOS', 'GYROS', 'WAFFLES', 'STEAK', 'SPAGHETTI']
 
 END_FONT = pygame.font.SysFont('Arial', 100)
 
@@ -138,6 +128,7 @@ def main():
     winCounter = 0
     code = choice(words)
     winScore = len(code)
+    guesses = []
 
     # Create boxes to display the code for correct guesses
     LETTER_BOX_WIDTH, LETTER_BOX_HEIGHT = 30, 50
@@ -174,15 +165,37 @@ def main():
             # Select a letter and then hide the button and display either a robot piece or the letter on the screen
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for i in buttonList:
-                    if i.isOver(pygame.mouse.get_pos()) == True:   
+                    if i.isOver(pygame.mouse.get_pos()) == True:
                         if i.text in code:
                             for j in codeButtons:
                                 if i.text == j.text:
                                     j.drawCorrect()
                                     winCounter += 1
+                        elif i.text == '1':
+                            pass
                         else:
                             loseCounter += 1
                         i.disappear('1')
+
+            # Handle player input if using keyboard
+            if event.type == pygame.KEYDOWN:
+                key = event.unicode
+                key = key.upper()
+                if not re.match("[A-Z]", key):
+                    break
+                if key in guesses:
+                    break
+                guesses.append(key)
+                for i in buttonList:
+                    if key == i.text:
+                        i.disappear('1')
+                if key in code:
+                    for j in codeButtons:
+                        if key == j.text:
+                            j.drawCorrect()
+                            winCounter += 1
+                else:
+                    loseCounter += 1
 
         draw_stuff(WIN, COMPUTER, RH, RLA, RRA, RB, RL, loseCounter, buttonList, codeButtons)
 
